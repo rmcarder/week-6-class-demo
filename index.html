@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Week 6: Transitions, Events, and the Constructor Pattern</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+  <style>
+    .section {
+      padding: 1em 0;
+    }
+
+    .header {
+      background: linear-gradient(to bottom, #337ab7 0%, #135a97 100%);
+      color: white;
+      padding: 1em 0 2em;
+    }
+
+    svg {
+      display: block;
+      margin: 0 auto;
+    }
+
+    .axis path, .axis line {
+      fill: none;
+      stroke: #ccc;
+      shape-rendering: crispEdges;
+    }
+
+    .axis text {
+      font-size: 11px;
+    }
+
+    .label {
+      font-weight: 700;
+    }
+
+    .bar {
+      fill: #337ab7;
+    }
+
+    .tooltip {
+      padding: .5em 1em;
+      background: rgba(0,0,0,.75);
+      color: white;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1;
+    }
+  </style>
+</head>
+<body>
+<div class="header section">
+  <div class="container">
+    <h1>Week 6: Transitions, Events, and the Constructor Pattern</h1>
+    <p>Plus more histograms!</p>
+  </div>
+</div>
+<div class="controls section">
+  <div class="container">
+    <div class="btn-toolbar">
+      <label for="year-range">Year range: </label>
+      <select id="year-range">
+        <option value="all">All years (1948&ndash;2016)</option>
+        <option value="1953-1960">Eisenhower (1953&ndash;1960)</option>
+        <option value="1961-1968">JKF &amp; LBJ (1961&ndash;1968)</option>
+        <option value="1969-1976">Nixon &amp; Ford (1969&ndash;1976)</option>
+        <option value="1970-1980">Carter (1977&ndash;1980)</option>
+        <option value="1981-1992">Reagan &amp; Bush (1981&ndash;1992)</option>
+        <option value="1993-2000">Clinton (1993&ndash;2000)</option>
+        <option value="2001-2008">G.W. Bush (2001&ndash;2008)</option>
+        <option value="2009-2016">Obama (2009&ndash;2016)</option>
+      </select>
+    </div>
+  </div>
+</div>
+<div class="main section">
+  <div class="container">
+    <div id="chart1"></div>
+    <div id="chart2"></div>
+  </div>
+</div>
+<script type="text/javascript" src="https://npmcdn.com/d3@3.5.17/d3.min.js"></script>
+<script type="text/javascript" src="https://npmcdn.com/d3-tip@0.6.7/index.js"></script>
+<script>
+  var data = [];
+  var options = {
+    yearRange: 'all'
+  };
+
+  var svg, x, tooltip;
+
+  var margin = { top: 5, right: 10, bottom: 40, left: 10 };
+
+  var width = 640 - margin.right - margin.left;
+  var height = 240 - margin.top - margin.bottom;
+
+  var binCount = 10;
+
+  // FETCH DATA
+
+  d3.json('data.json', function (error, json) {
+    if (error) { throw error; }
+
+    data = json;
+
+    setup();
+    update();
+
+    // EVENT HANDLERS
+
+    d3.select('#year-range').on('change', function () {
+      options.yearRange = d3.event.target.value;
+      update();
+    });
+  });
+
+  function setup() {
+    svg = d3.select('#chart1')
+      .append('svg')
+      .attr('width', width + margin.right + margin.left)
+      .attr('height', height + margin.top + margin.bottom)
+      .append('g')
+      .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+    x = d3.scale.linear()
+      .domain([0, d3.max(data, function (d) { return d.unemployment; })])
+      .rangeRound([0, width])
+      .nice();
+
+    var xAxis = d3.svg.axis()
+      .scale(x)
+      .ticks(binCount)
+      .tickFormat(d3.format('.0%'))
+      .orient('bottom');
+
+    svg.append('g')
+      .attr('class', 'x axis')
+      .attr('transform', 'translate(0,' + (height) + ')')
+      .call(xAxis)
+      .append('text')
+      .attr('class', 'label')
+      .attr('dy', '.71em')
+      .attr('y', 25)
+      .attr('x', width / 2)
+      .style('text-anchor', 'middle')
+      .text('Unemployment Rate');
+  }
+
+  function update() {
+    txData = data.slice();
+
+    if (options.yearRange !== 'all') {
+      var yearRange = options.yearRange.split('-');
+      txData = txData.filter(function (d) {
+        return d.year >= yearRange[0] && d.year <= yearRange[1];
+      });
+    }
+
+    var hist = d3.layout.histogram()
+      (txData);
+
+    var y = d3.scale.linear()
+      .domain([0, d3.max(hist, function (d) { return d.length; })])
+      .range([0, height]);
+
+    var bars = svg.selectAll('.bar')
+      .data(hist);
+
+    // ENTER
+    bars.enter().append('rect')
+      .attr('class', 'bar');
+
+    // ALL
+    bars;
+  }
+</script>
+</body>
+</html>
