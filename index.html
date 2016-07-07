@@ -158,6 +158,8 @@
     }
 
     var hist = d3.layout.histogram()
+      .value(function (d) { return d.unemployment; })
+      .bins(x.ticks(binCount))
       (txData);
 
     var y = d3.scale.linear()
