@@ -175,7 +175,9 @@
     bars.enter().append('rect')
       .attr('class', 'bar')
       .attr('x', function (d) { return x(d.x); })
-      .attr('width', barWidth);
+      .attr('width', barWidth)
+      .attr('y', height)
+      .attr('height', 0);
 
     // ALL
     bars
