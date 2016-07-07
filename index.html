@@ -106,20 +106,23 @@
 
     data = json;
 
-    var chart = new Chart();
+    var charts = [
+      new Chart('#chart1'),
+      new Chart('#chart2')
+    ];
 
     // EVENT HANDLERS
 
     d3.select('#year-range').on('change', function () {
       options.yearRange = d3.event.target.value;
-      chart.update();
+      charts.forEach(function (chart) { chart.update(); });
     });
   });
 
-  function Chart() {
+  function Chart(selector) {
     var chart = this;
 
-    chart.svg = d3.select('#chart1')
+    chart.svg = d3.select(selector)
       .append('svg')
       .attr('width', width + margin.right + margin.left)
       .attr('height', height + margin.top + margin.bottom)
