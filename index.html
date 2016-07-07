@@ -122,6 +122,8 @@
   function Chart(selector, variable, title) {
     var chart = this;
 
+    chart.variable = variable;
+
     chart.svg = d3.select(selector)
       .append('svg')
       .attr('width', width + margin.right + margin.left)
@@ -175,7 +177,7 @@
     }
 
     var hist = d3.layout.histogram()
-      .value(function (d) { return d.unemployment; })
+      .value(function (d) { return d[chart.variable]; })
       .bins(chart.x.ticks(binCount))
       (txData);
 
