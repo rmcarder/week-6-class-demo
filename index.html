@@ -107,8 +107,8 @@
     data = json;
 
     var charts = [
-      new Chart('#chart1'),
-      new Chart('#chart2')
+      new Chart('#chart1', 'unemployment', 'Unemployment Rate'),
+      new Chart('#chart2', 'inflation', 'Inflation Rate (CPI-U)')
     ];
 
     // EVENT HANDLERS
@@ -119,7 +119,7 @@
     });
   });
 
-  function Chart(selector) {
+  function Chart(selector, variable, title) {
     var chart = this;
 
     chart.svg = d3.select(selector)
@@ -130,7 +130,7 @@
       .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
     chart.x = d3.scale.linear()
-      .domain([0, d3.max(data, function (d) { return d.unemployment; })])
+      .domain([0, d3.max(data, function (d) { return d[variable]; })])
       .rangeRound([0, width])
       .nice();
 
@@ -150,7 +150,7 @@
       .attr('y', 25)
       .attr('x', width / 2)
       .style('text-anchor', 'middle')
-      .text('Unemployment Rate');
+      .text(title);
 
     chart.tooltip = d3.tip()
       .attr('class', 'tooltip')
