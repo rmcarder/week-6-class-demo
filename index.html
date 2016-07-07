@@ -92,8 +92,6 @@
     yearRange: 'all'
   };
 
-  var svg, x, tooltip;
-
   var margin = { top: 5, right: 10, bottom: 40, left: 10 };
 
   var width = 640 - margin.right - margin.left;
@@ -108,37 +106,38 @@
 
     data = json;
 
-    setup();
-    update();
+    var chart = new Chart();
 
     // EVENT HANDLERS
 
     d3.select('#year-range').on('change', function () {
       options.yearRange = d3.event.target.value;
-      update();
+      chart.update();
     });
   });
 
-  function setup() {
-    svg = d3.select('#chart1')
+  function Chart() {
+    var chart = this;
+
+    chart.svg = d3.select('#chart1')
       .append('svg')
       .attr('width', width + margin.right + margin.left)
       .attr('height', height + margin.top + margin.bottom)
       .append('g')
       .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
-    x = d3.scale.linear()
+    chart.x = d3.scale.linear()
       .domain([0, d3.max(data, function (d) { return d.unemployment; })])
       .rangeRound([0, width])
       .nice();
 
     var xAxis = d3.svg.axis()
-      .scale(x)
+      .scale(chart.x)
       .ticks(binCount)
       .tickFormat(d3.format('.0%'))
       .orient('bottom');
 
-    svg.append('g')
+    chart.svg.append('g')
       .attr('class', 'x axis')
       .attr('transform', 'translate(0,' + (height) + ')')
       .call(xAxis)
@@ -150,15 +149,19 @@
       .style('text-anchor', 'middle')
       .text('Unemployment Rate');
 
-    tooltip = d3.tip()
+    chart.tooltip = d3.tip()
       .attr('class', 'tooltip')
       .offset([-6, 0])
       .html(function(d) { return d.length + ' months'; });
 
-    tooltip(svg);
+    chart.tooltip(chart.svg);
+
+    chart.update();
   }
 
-  function update() {
+  Chart.prototype.update = function () {
+    var chart = this;
+
     txData = data.slice();
 
     if (options.yearRange !== 'all') {
@@ -170,34 +173,34 @@
 
     var hist = d3.layout.histogram()
       .value(function (d) { return d.unemployment; })
-      .bins(x.ticks(binCount))
+      .bins(chart.x.ticks(binCount))
       (txData);
 
     var y = d3.scale.linear()
       .domain([0, d3.max(hist, function (d) { return d.length; })])
       .range([0, height]);
 
-    var barWidth = x(hist[1].x) - x(hist[0].x) + 1;
+    var barWidth = chart.x(hist[1].x) - chart.x(hist[0].x) + 1;
 
-    var bars = svg.selectAll('.bar')
+    var bars = chart.svg.selectAll('.bar')
       .data(hist);
 
     // ENTER
     bars.enter().append('rect')
       .attr('class', 'bar')
-      .attr('x', function (d) { return x(d.x); })
+      .attr('x', function (d) { return chart.x(d.x); })
       .attr('width', barWidth)
       .attr('y', height)
       .attr('height', 0)
-      .on('mouseover', tooltip.show)
-      .on('mouseout', tooltip.hide);
+      .on('mouseover', chart.tooltip.show)
+      .on('mouseout', chart.tooltip.hide);
 
     // ALL
     bars
       .transition().duration(150).delay(function (d, i) { return i * 50; })
       .attr('y', function (d) { return height - y(d.length); })
       .attr('height', function (d) { return y(d.length); });
-  }
+  };
 </script>
 </body>
 </html>
