@@ -149,6 +149,13 @@
       .attr('x', width / 2)
       .style('text-anchor', 'middle')
       .text('Unemployment Rate');
+
+    tooltip = d3.tip()
+      .attr('class', 'tooltip')
+      .offset([-6, 0])
+      .html(function(d) { return d.length + ' months'; });
+
+    tooltip(svg);
   }
 
   function update() {
@@ -181,7 +188,9 @@
       .attr('x', function (d) { return x(d.x); })
       .attr('width', barWidth)
       .attr('y', height)
-      .attr('height', 0);
+      .attr('height', 0)
+      .on('mouseover', tooltip.show)
+      .on('mouseout', tooltip.hide);
 
     // ALL
     bars
